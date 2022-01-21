@@ -140,7 +140,7 @@ class TissueMask(BinaryMask):
     chain of filters."""
 
     def __init__(self, *filters):
-        self.custom_filters = filters if len(filters > 0) else None
+        self.custom_filters = filters if len(filters) > 0 else None
 
     def __call__(self, obj: Union[Slide, Tile]) -> np.ndarray:
         """Apply a predefined chain of filters to calculate the tissue area mask.
