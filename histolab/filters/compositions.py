@@ -41,15 +41,19 @@ class FiltersComposition:
         >>> filters_tile = FiltersComposition(Tile).tissue_mask_filters
     """
 
-    def __new__(cls: type, cls_):
+    def __new__(cls: type, cls_, *custom_filters):
         if not cls_:
             raise FilterCompositionError("cls_ parameter cannot be None")
         FiltersSubCls = {
             "Tile": _TileFiltersComposition,
             "Slide": _SlideFiltersComposition,
+            "Compose":_CustomFiltersComposition
         }.get(cls_.__name__)
         if FiltersSubCls:
             instance = super(FiltersComposition, FiltersSubCls).__new__(FiltersSubCls)
+            # If instance is an object of _CustomFiltersComposition, set the custom filters
+            if isinstance(instance, _CustomFiltersComposition):
+                instance.setCustomFilters(*custom_filters)
             return instance
         raise FilterCompositionError(
             f"Filters composition for the class {cls_.__name__} is not available"
@@ -120,6 +124,24 @@ class _SlideFiltersComposition(FiltersComposition):
             ]
         )
 
+class _CustomFiltersComposition(FiltersComposition):
+
+    def setCustomFilters(self,*custom_filters):
+        """ To set the custom filters to be composed """
+        self.custom_filters = custom_filters
+
+    @lazyproperty
+    def tissue_mask_filters(self) -> imf.Compose:
+        """Filters composition for slide's tissue estimation with custom filters
+
+        Returns
+        -------
+        imf.Compose
+            Filters composition
+        """
+        return imf.Compose(
+            self.custom_filters
+        )
 
 class _TileFiltersComposition(FiltersComposition):
     @lazyproperty

@@ -137,6 +137,12 @@ class TissueMask(BinaryMask):
     The tissue within the slide or tile is automatically detected through a predefined
     chain of filters."""
 
+    def __init__(self, *filters):
+        if len(filters)>0:
+            self.custom_filters = filters
+        else:
+            self.custom_filters = None
+
     def __call__(self, obj: Union[Slide, Tile]) -> np.ndarray:
         """Apply a predefined chain of filters to calculate the tissue area mask.
 
@@ -166,6 +172,7 @@ class TissueMask(BinaryMask):
     @method_dispatch
     def _mask(self, slide) -> np.ndarray:
         """Return the thumbnail binary mask of the tissue area.
+        If custom filters exist, instantiate the Composition corresponding to the Compose class
 
         Parameters
         ----------
@@ -178,7 +185,11 @@ class TissueMask(BinaryMask):
             Binary mask of the tissue area. The dimensions are those of the thumbnail.
         """
         thumb = slide.thumbnail
-        filters = FiltersComposition(histolab.slide.Slide).tissue_mask_filters
+        if self.custom_filters:
+            fc = FiltersComposition(histolab.filters.image_filters.Compose, *self.custom_filters)
+        else:
+            fc = FiltersComposition(histolab.slide.Slide)
+        filters = fc.tissue_mask_filters
         thumb_mask = filters(thumb)
         return thumb_mask
 
