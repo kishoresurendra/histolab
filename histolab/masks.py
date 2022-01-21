@@ -35,6 +35,8 @@ from .util import (
     regions_from_binary_mask,
 )
 
+custom_filters = ""
+
 
 class BinaryMask(ABC):
     """Generic object for binary masks.
@@ -138,10 +140,7 @@ class TissueMask(BinaryMask):
     chain of filters."""
 
     def __init__(self, *filters):
-        if len(filters)>0:
-            self.custom_filters = filters
-        else:
-            self.custom_filters = None
+        self.custom_filters = filters if len(filters > 0) else None
 
     def __call__(self, obj: Union[Slide, Tile]) -> np.ndarray:
         """Apply a predefined chain of filters to calculate the tissue area mask.
@@ -185,10 +184,13 @@ class TissueMask(BinaryMask):
             Binary mask of the tissue area. The dimensions are those of the thumbnail.
         """
         thumb = slide.thumbnail
-        if self.custom_filters:
-            fc = FiltersComposition(histolab.filters.image_filters.Compose, *self.custom_filters)
-        else:
-            fc = FiltersComposition(histolab.slide.Slide)
+        fc = (
+            FiltersComposition(
+                histolab.filters.image_filters.Compose, *self.custom_filters
+            )
+            if self.custom_filters
+            else FiltersComposition(histolab.slide.Slide)
+        )
         filters = fc.tissue_mask_filters
         thumb_mask = filters(thumb)
         return thumb_mask
