@@ -24,28 +24,30 @@ def extractTiles(all_tissue_mask , slidetox):
 
     random_tiles_extractor.extract(slidetox,all_tissue_mask)
 
-#Select an ovarian tissue slide
+"""Select an ovarian tissue slide"""
 ovarian_svs, ovarian_path = ovarian_tissue()
 
-#Set a custom filters mask instance : No dilation and min size set for small objects
-all_tissue_custom_mask = TissueMask(
+
+"""Set a custom filters mask instance : Dilation with a very large disk size and min size set for small objects
+   This would lead to selection of the entire WSI including the background"""
+all_tissue_mask = TissueMask(
     imf.RgbToGrayscale(),
     imf.OtsuThreshold(),
-    mof.RemoveSmallObjects(min_size=500),
-    mof.RemoveSmallHoles()
+    mof.BinaryDilation(disk_size=20),
+    mof.RemoveSmallObjects(min_size=750),
  )
 
-#Set a default mask instance
+"""The default settings lead to selection of mainly the tissue areas within a WSI"""
 all_tissue_default_mask = TissueMask()
 
-#Set an output tile path for custom and default filters separately
-custom_tile_path = '/CustomOutput/'
-default_tile_path = '/DefaultOutput/'
+"""Set an output tile path for custom and default filters separately"""
+custom_tile_path = 'CustomOutput'
+default_tile_path = 'DefaultOutput'
 
-#Create slide instance for custom and default filters separately
+"""Create slide instance for custom and default filters separately"""
 slidetox_custom = Slide(ovarian_path,custom_tile_path)
 slidetox_default = Slide(ovarian_path,default_tile_path)
 
-#Extract tiles for both scenarios
+"""Extract tiles for both scenarios"""
 extractTiles(all_tissue_custom_mask , slidetox_custom)
 extractTiles(all_tissue_default_mask , slidetox_default)
