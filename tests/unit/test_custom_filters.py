@@ -6,7 +6,7 @@ import histolab.filters.morphological_filters as mof
 from histolab.data import ovarian_tissue
 
 
-def fetch_mask(all_tissue_mask , slidetox):
+def fetch_masked_image(all_tissue_mask , slidetox):
     mask = slidetox.locate_mask(all_tissue_mask)
     return mask
 
@@ -32,6 +32,6 @@ default_tile_path = 'DefaultOutput'
 slidetox_custom = Slide(ovarian_path,custom_tile_path)
 slidetox_default = Slide(ovarian_path,default_tile_path)
 
-#Extract tiles for both scenarios
-custom_mask_img = fetch_mask(all_tissue_custom_mask , slidetox_custom)
-default_mask_img = fetch_mask(all_tissue_default_mask , slidetox_default)
+#Fetch the resulting image after applying tissue masks
+custom_mask_img = fetch_masked_image(all_tissue_custom_mask , slidetox_custom)
+default_mask_img = fetch_masked_image(all_tissue_default_mask , slidetox_default)
